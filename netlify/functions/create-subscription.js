@@ -1,50 +1,49 @@
-// netlify/functions/create-subscription.js
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event) => {
   try {
-    const { email, name, paymentMethodId, amount, donation_by } = JSON.parse(event.body);
+    if (event.httpMethod !== 'POST') {
+      return { statusCode: 405, body: 'Method Not Allowed' };
+    }
 
-    // Create a customer
+    const { amount, currency, interval, donation_by } = JSON.parse(event.body);
+
+    // 1. Create a customer
     const customer = await stripe.customers.create({
-      email,
-      name,
-      payment_method: paymentMethodId,
-      invoice_settings: { default_payment_method: paymentMethodId },
-      metadata: { donation_by: donation_by || '' }
+      description: donation_by || 'Monthly donor',
     });
 
-    // Create a product dynamically (or use an existing product ID)
+    // 2. Create a product for the subscription (if needed)
     const product = await stripe.products.create({
-      name: `Monthly Donation (${amount / 100} EUR)`,
+      name: 'Monthly Donation',
     });
 
-    // Create a price for monthly donation
+    // 3. Create a price for the subscription
     const price = await stripe.prices.create({
-      unit_amount: amount, // in cents
-      currency: 'eur',
-      recurring: { interval: 'month' },
+      unit_amount: amount,
+      currency: currency,
+      recurring: { interval: interval },
       product: product.id,
     });
 
-    // Create subscription
+    // 4. Create the subscription
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: price.id }],
+      payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
     });
 
+    const clientSecret = subscription.latest_invoice.payment_intent.client_secret;
+
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        subscriptionId: subscription.id,
-        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-      }),
+      body: JSON.stringify({ clientSecret }),
     };
+
   } catch (err) {
-    console.error(err);
     return {
-      statusCode: 400,
+      statusCode: 500,
       body: JSON.stringify({ error: err.message }),
     };
   }
