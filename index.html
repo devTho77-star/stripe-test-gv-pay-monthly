@@ -536,7 +536,7 @@ form.addEventListener('submit', async (event) => {
     const donationByName = document.getElementById('donation-by').value;
     
     // Create payment intent on your server
-    const response = await fetch('/create-subscription', {
+    const response = await fetch('/.netlify/functions/create-subscription', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -609,4 +609,5 @@ updateButtonText();
 </script>
 </body>
 </html>
+
 
