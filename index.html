@@ -540,7 +540,7 @@ form.addEventListener('submit', async (event) => {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer YOUR_SECRET_KEY' // Replace with your secret key
+        'Authorization': 'Bearer STRIPE_SECRET_KEY' // Replace with your secret key
       },
       body: JSON.stringify({
         amount: Math.round(amount * 100), // Convert to cents
@@ -609,3 +609,4 @@ updateButtonText();
 </script>
 </body>
 </html>
+
