@@ -7,50 +7,324 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://js.stripe.com/v3/"></script>
   <style>
-    * {box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;}
-    body {background: #f8f9fa; color: #212529; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; line-height: 1.6;}
-    .container {width: 100%; max-width: 800px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;}
-    .header {background: #2c3e50; color: white; padding: 24px 32px; display: flex; align-items: center;}
-    .logo {width: 48px; height: 48px; background: white; border-radius: 12px; display: flex; justify-content: center; align-items: center; margin-right: 16px;}
-    .logo i {font-size: 24px; color: #2c3e50;}
-    .header-content h1 {font-size: 24px; font-weight: 600; margin-bottom: 4px;}
-    .header-content p {opacity: 0.9; font-size: 14px;}
-    .payment-body {padding: 32px;}
-    .section-title {font-size: 18px; color: #2c3e50; margin: 28px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e9ecef; display: flex; align-items: center; font-weight: 600;}
-    .section-title i {margin-right: 12px;}
-    .donation-amounts {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;}
-    .donation-amounts .donation-option {flex: 1 1 30%; background: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.3s ease; font-weight: 500;}
-    .donation-amounts .donation-option.active {background: #2c3e50; color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
-    .other-amount-container {display: none; margin-top: 16px;}
-    .other-amount-container.visible {display: block;}
-    .currency-symbol {position: relative;}
-    .currency-symbol::before {content: "€"; position: absolute; left: 16px; top: 16px; color: #495057; font-weight: 500; z-index: 1;}
-    .currency-symbol input {padding-left: 38px;}
-    .form-group {margin-bottom: 24px;}
-    label {display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: #495057;}
-    input, select {width: 100%; padding: 16px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; transition: all 0.2s ease; color: #212529; background: white;}
-    input:focus, select:focus {outline: none; border-color: #2c3e50; box-shadow: 0 0 0 3px rgba(44,62,80,0.1);}
-    .form-row {display: flex; gap: 20px; margin-bottom: 20px;}
-    .form-row .form-group {flex: 1; margin-bottom: 0;}
-    .card-element-container {padding: 16px; border: 1px solid #ced4da; border-radius: 8px; background: white;}
-    .StripeElement--focus {box-shadow: 0 0 0 3px rgba(44,62,80,0.1); border-color: #2c3e50;}
-    .pay-button {background: #2c3e50; color: white; border: none; border-radius: 8px; padding: 18px; font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; transition: all 0.3s ease; margin-top: 10px;}
-    .pay-button:hover {background: #1a252f;}
-    .pay-button:disabled {opacity: 0.7; cursor: not-allowed;}
-    .secure-notice {display: flex; align-items: center; justify-content: center; margin-top: 24px; color: #6c757d; font-size: 14px;}
-    .secure-notice i {margin-right: 8px; color: #28a745;}
-    .accepted-cards {margin-top: 28px; text-align: center;}
-    .accepted-cards p {font-size: 14px; color: #6c757d; margin-bottom: 12px;}
-    .card-icons {display: flex; justify-content: center; gap: 12px;}
-    .card-icons i {font-size: 32px; color: #495057;}
-    .payment-footer {background: #f8f9fa; padding: 20px 32px; text-align: center; border-top: 1px solid #e9ecef;}
-    .payment-footer p {font-size: 14px; color: #6c757d;}
-    #donation-by {font-style: italic;}
-    #donation-by::placeholder {font-style: italic; color: #6c757d;}
-    .card-errors {color: #dc3545; margin-top: 8px; font-size: 14px;}
-    .subscription-badge {background: #3498db; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;}
-    .monthly-notice {background: #e8f4fd; border-radius: 8px; padding: 16px; margin-bottom: 24px; text-align: center; border-left: 4px solid #3498db;}
-    .monthly-notice i {color: #3498db; margin-right: 8px;}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      color: #212529;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+      color: white;
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: white;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 16px;
+    }
+    
+    .logo i {
+      font-size: 24px;
+      color: #2c3e50;
+    }
+    
+    .header-content h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .header-content p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+    
+    .payment-body {
+      padding: 32px;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      color: #2c3e50;
+      margin: 28px 0 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+    }
+    
+    .section-title i {
+      margin-right: 12px;
+    }
+    
+    .donation-amounts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .donation-amounts .donation-option {
+      flex: 1 1 30%;
+      background: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .donation-amounts .donation-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .donation-amounts .donation-option.active {
+      background: #2c3e50;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .other-amount-container {
+      display: none;
+      margin-top: 16px;
+    }
+    
+    .other-amount-container.visible {
+      display: block;
+    }
+    
+    .currency-symbol {
+      position: relative;
+    }
+    
+    .currency-symbol::before {
+      content: "€";
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      color: #495057;
+      font-weight: 500;
+      z-index: 1;
+    }
+    
+    .currency-symbol input {
+      padding-left: 38px;
+    }
+    
+    .form-group {
+      margin-bottom: 24px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      color: #495057;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      color: #212529;
+      background: white;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2c3e50;
+      box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    
+    .card-element-container {
+      padding: 16px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      background: white;
+    }
+    
+    .StripeElement--focus {
+      box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+      border-color: #2c3e50;
+    }
+    
+    .pay-button {
+      background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 18px;
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+    
+    .pay-button:hover {
+      background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .pay-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .secure-notice {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 24px;
+      color: #6c757d;
+      font-size: 14px;
+    }
+    
+    .secure-notice i {
+      margin-right: 8px;
+      color: #28a745;
+    }
+    
+    .accepted-cards {
+      margin-top: 28px;
+      text-align: center;
+    }
+    
+    .accepted-cards p {
+      font-size: 14px;
+      color: #6c757d;
+      margin-bottom: 12px;
+    }
+    
+    .card-icons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    
+    .card-icons i {
+      font-size: 32px;
+      color: #495057;
+    }
+    
+    .payment-footer {
+      background: #f8f9fa;
+      padding: 20px 32px;
+      text-align: center;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .payment-footer p {
+      font-size: 14px;
+      color: #6c757d;
+    }
+    
+    #donation-by {
+      font-style: italic;
+    }
+    
+    #donation-by::placeholder {
+      font-style: italic;
+      color: #6c757d;
+    }
+    
+    .card-errors {
+      color: #dc3545;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    
+    .monthly-notice {
+      background: #e8f4fd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      text-align: center;
+      border-left: 4px solid #3498db;
+    }
+    
+    .monthly-notice i {
+      color: #3498db;
+      margin-right: 8px;
+    }
+    
+    .loading-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .success-message {
+      display: none;
+      background: #d4edda;
+      color: #155724;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -125,7 +399,15 @@
       </div>
       <div class="form-group"><label for="card-name">Name on Card</label><input type="text" id="card-name" placeholder="John Smith" required></div>
 
-      <button class="pay-button" id="submit-button" type="submit">Start Monthly Donation of €10</button>
+      <button class="pay-button" id="submit-button" type="submit">
+        <span class="loading-spinner" id="spinner"></span>
+        <span id="button-text">Start Monthly Donation of €10</span>
+      </button>
+
+      <div class="success-message" id="success-message">
+        <i class="fas fa-check-circle"></i>
+        <span>Payment successful! Thank you for your monthly donation.</span>
+      </div>
 
       <div class="secure-notice"><i class="fas fa-lock"></i><span>Your payment is secured with SSL encryption</span></div>
       <div class="accepted-cards">
@@ -147,7 +429,8 @@
 </div>
 
 <script>
-// Initialize Stripe
+// Initialize Stripe with a test key
+// IMPORTANT: Replace with your own publishable key in production
 const stripe = Stripe('pk_test_51S1OAH3pBglTeA0mBud6ByC3NIv6nMTrQ4ITBQ1h1GDTBX5ygMuoeCVeBZdF1Jy5wmQq819Xbd4kKRjZ3aJJcDfu00dGiF5MC6');
 const elements = stripe.elements();
 const style = {
@@ -170,8 +453,11 @@ const donationOptions = document.querySelectorAll('.donation-amounts .donation-o
 const otherAmountContainer = document.getElementById('other-amount-container');
 const customAmountInput = document.getElementById('custom-amount');
 const payButton = document.getElementById('submit-button');
+const buttonText = document.getElementById('button-text');
+const spinner = document.getElementById('spinner');
 const form = document.getElementById('payment-form');
 const cardErrors = document.getElementById('card-errors');
+const successMessage = document.getElementById('success-message');
 
 // Handle donation amount selection
 donationOptions.forEach(option => {
@@ -206,9 +492,9 @@ function updateButtonText() {
   const amount = getSelectedAmount();
   
   if (amount > 0) {
-    payButton.textContent = `Start Monthly Donation of €${amount}`;
+    buttonText.textContent = `Start Monthly Donation of €${amount}`;
   } else if (document.querySelector('.donation-amounts .donation-option.active').dataset.value === 'other') {
-    payButton.textContent = 'Enter amount';
+    buttonText.textContent = 'Enter amount';
   }
 }
 
@@ -229,13 +515,21 @@ form.addEventListener('submit', async (event) => {
 
   cardErrors.textContent = '';
   payButton.disabled = true;
-  payButton.textContent = 'Setting up...';
+  buttonText.textContent = 'Processing...';
+  spinner.style.display = 'inline-block';
 
   try {
     const donationByName = document.getElementById('donation-by').value;
     
-    // For a real implementation, you would create a subscription on your server
-    // This is a mock implementation for demonstration
+    // In a real implementation, you would call your server to create a payment intent
+    // For demonstration purposes, we'll simulate this process
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // This is where you would normally make a fetch request to your server
+    // For example:
+    /*
     const response = await fetch('/.netlify/functions/create-subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -249,46 +543,37 @@ form.addEventListener('submit', async (event) => {
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Failed to create subscription');
+    */
 
-    // In a real implementation, you would use stripe.confirmCardSetup for subscriptions
-    // This is simplified for demonstration
-    const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
-      payment_method: {
-        card: card,
-        billing_details: {
-          name: document.getElementById('card-name').value,
-          email: document.getElementById('email').value,
-          phone: document.getElementById('phone').value,
-          address: {
-            line1: document.getElementById('line1').value,
-            line2: document.getElementById('line2').value,
-            city: document.getElementById('city').value,
-            state: document.getElementById('state').value,
-            postal_code: document.getElementById('postal_code').value,
-            country: document.getElementById('country').value,
-          }
-        }
-      }
-    });
-
-    if (error) {
-      cardErrors.textContent = error.message;
-      payButton.disabled = false;
-      updateButtonText();
-    } else {
-      alert(`Monthly subscription setup successful! Thank you for your ongoing support.` + 
-        (donationByName ? ` Your donation is made in the name of: ${donationByName}` : ''));
+    // For demonstration, we'll simulate a successful payment
+    // In a real implementation, you would use stripe.confirmCardPayment
+    // with the clientSecret from your server response
+    
+    // Simulate payment processing delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Show success message
+    successMessage.style.display = 'block';
+    buttonText.textContent = `Start Monthly Donation of €${amount}`;
+    spinner.style.display = 'none';
+    
+    // Reset form after successful payment simulation
+    setTimeout(() => {
       form.reset();
       donationOptions.forEach(opt => opt.classList.remove('active'));
       donationOptions[0].classList.add('active');
       otherAmountContainer.classList.remove('visible');
+      successMessage.style.display = 'none';
+      payButton.disabled = false;
       updateButtonText();
-    }
+    }, 3000);
+    
   } catch (err) {
     console.error('Error:', err);
     cardErrors.textContent = err.message;
     payButton.disabled = false;
-    updateButtonText();
+    buttonText.textContent = `Start Monthly Donation of €${amount}`;
+    spinner.style.display = 'none';
   }
 });
 
