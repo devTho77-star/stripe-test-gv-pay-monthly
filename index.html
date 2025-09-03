@@ -325,6 +325,16 @@
       margin-top: 20px;
       text-align: center;
     }
+    
+    .api-key-notice {
+      background: #fff3cd;
+      color: #856404;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      border-left: 4px solid #ffc107;
+    }
   </style>
 </head>
 <body>
@@ -339,6 +349,11 @@
     </div>
 
     <div class="payment-body">
+      <div class="api-key-notice">
+        <i class="fas fa-key"></i>
+        <span>Using your Stripe API key for payment processing</span>
+      </div>
+      
       <div class="monthly-notice">
         <i class="fas fa-info-circle"></i>
         <span>You're setting up a <strong>monthly recurring donation</strong> that will continue until you cancel.</span>
@@ -429,8 +444,7 @@
 </div>
 
 <script>
-// Initialize Stripe with a test key
-// IMPORTANT: Replace with your own publishable key in production
+// Initialize Stripe with API key
 const stripe = Stripe('pk_test_51S1OAH3pBglTeA0mBud6ByC3NIv6nMTrQ4ITBQ1h1GDTBX5ygMuoeCVeBZdF1Jy5wmQq819Xbd4kKRjZ3aJJcDfu00dGiF5MC6');
 const elements = stripe.elements();
 const style = {
@@ -521,20 +535,15 @@ form.addEventListener('submit', async (event) => {
   try {
     const donationByName = document.getElementById('donation-by').value;
     
-    // In a real implementation, you would call your server to create a payment intent
-    // For demonstration purposes, we'll simulate this process
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // This is where you would normally make a fetch request to your server
-    // For example:
-    /*
-    const response = await fetch('/.netlify/functions/create-subscription', {
+    // Create payment intent on your server
+    const response = await fetch('/create-subscription', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_SECRET_KEY' // Replace with your secret key
+      },
       body: JSON.stringify({
-        amount: Math.round(amount * 100), // cents
+        amount: Math.round(amount * 100), // Convert to cents
         currency: 'eur',
         interval: 'monthly',
         donation_by: donationByName
@@ -543,36 +552,54 @@ form.addEventListener('submit', async (event) => {
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Failed to create subscription');
-    */
 
-    // For demonstration, we'll simulate a successful payment
-    // In a real implementation, you would use stripe.confirmCardPayment
-    // with the clientSecret from your server response
-    
-    // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Show success message
-    successMessage.style.display = 'block';
-    buttonText.textContent = `Start Monthly Donation of €${amount}`;
-    spinner.style.display = 'none';
-    
-    // Reset form after successful payment simulation
-    setTimeout(() => {
-      form.reset();
-      donationOptions.forEach(opt => opt.classList.remove('active'));
-      donationOptions[0].classList.add('active');
-      otherAmountContainer.classList.remove('visible');
-      successMessage.style.display = 'none';
+    // Confirm the payment with Stripe
+    const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
+      payment_method: {
+        card: card,
+        billing_details: {
+          name: document.getElementById('card-name').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+          address: {
+            line1: document.getElementById('line1').value,
+            line2: document.getElementById('line2').value,
+            city: document.getElementById('city').value,
+            state: document.getElementById('state').value,
+            postal_code: document.getElementById('postal_code').value,
+            country: document.getElementById('country').value,
+          }
+        }
+      }
+    });
+
+    if (error) {
+      cardErrors.textContent = error.message;
       payButton.disabled = false;
-      updateButtonText();
-    }, 3000);
-    
+      buttonText.textContent = `Start Monthly Donation of €${amount}`;
+      spinner.style.display = 'none';
+    } else {
+      // Payment succeeded
+      successMessage.style.display = 'block';
+      buttonText.textContent = `Start Monthly Donation of €${amount}`;
+      spinner.style.display = 'none';
+      
+      // Reset form after successful payment
+      setTimeout(() => {
+        form.reset();
+        donationOptions.forEach(opt => opt.classList.remove('active'));
+        donationOptions[0].classList.add('active');
+        otherAmountContainer.classList.remove('visible');
+        successMessage.style.display = 'none';
+        payButton.disabled = false;
+        updateButtonText();
+      }, 3000);
+    }
   } catch (err) {
     console.error('Error:', err);
     cardErrors.textContent = err.message;
     payButton.disabled = false;
-    buttonText.textContent = `Start Monthly Donation of €${amount}`;
+    buttonText.textContent = `Start Monthly Donation of €${getSelectedAmount()}`;
     spinner.style.display = 'none';
   }
 });
