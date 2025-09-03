@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monthly Donation</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body {font-family: system-ui, sans-serif; background:#f8f9fa; display:flex; justify-content:center; padding:40px;}
+    .container {background:#fff; padding:30px; border-radius:12px; width:100%; max-width:500px; box-shadow:0 5px 15px rgba(0,0,0,0.1);}
+    h1 {margin-bottom:20px; font-size:22px; color:#2c3e50;}
+    .donation-amounts {display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;}
+    .donation-option {flex:1 1 30%; padding:12px; border:1px solid #ccc; text-align:center; border-radius:6px; cursor:pointer;}
+    .donation-option.active {background:#2c3e50; color:#fff;}
+    .form-group {margin-bottom:15px;}
+    label {display:block; margin-bottom:6px; font-size:14px;}
+    input, select {width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;}
+    .card-element {padding:12px; border:1px solid #ccc; border-radius:6px; background:#fff;}
+    .pay-button {background:#2c3e50; color:#fff; padding:14px; border:none; border-radius:8px; font-size:16px; cursor:pointer; width:100%;}
+    .pay-button:disabled {opacity:0.6; cursor:not-allowed;}
+    .card-errors {color:red; margin-top:8px; font-size:14px;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Support Us Monthly ❤️</h1>
+    <form id="payment-form">
+      <div class="donation-amounts">
+        <div class="donation-option active" data-value="500">€5</div>
+        <div class="donation-option" data-value="1000">€10</div>
+        <div class="donation-option" data-value="2000">€20</div>
+        <div class="donation-option" data-value="other">Other</div>
+      </div>
+      <div id="other-amount-container" style="display:none;">
+        <div class="form-group">
+          <label>Custom Amount (€)</label>
+          <input type="number" id="custom-amount" min="1" step="0.01" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="name" required />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" required />
+      </div>
+      <div class="form-group">
+        <label>Donation by (optional)</label>
+        <input type="text" id="donation-by" placeholder="In memory of..." />
+      </div>
+      <div class="form-group">
+        <label>Card Details</label>
+        <div id="card-element" class="card-element"></div>
+        <div id="card-errors" class="card-errors"></div>
+      </div>
+      <div class="form-group">
+        <label>Name on Card</label>
+        <input type="text" id="card-name" required />
+      </div>
+      <button id="submit-button" class="pay-button" type="submit">Start Monthly Donation</button>
+    </form>
+  </div>
+
+  <script>
+    const stripe = Stripe("pk_test_xxx"); // replace with your publishable key
+    const elements = stripe.elements();
+    const card = elements.create("card", { hidePostalCode: true });
+    card.mount("#card-element");
+
+    const form = document.getElementById("payment-form");
+    const payButton = document.getElementById("submit-button");
+    const cardErrors = document.getElementById("card-errors");
+    const donationOptions = document.querySelectorAll(".donation-option");
+    const otherAmountContainer = document.getElementById("other-amount-container");
+    const customAmountInput = document.getElementById("custom-amount");
+
+    donationOptions.forEach(opt => {
+      opt.addEventListener("click", () => {
+        donationOptions.forEach(o => o.classList.remove("active"));
+        opt.classList.add("active");
+        if (opt.dataset.value === "other") {
+          otherAmountContainer.style.display = "block";
+        } else {
+          otherAmountContainer.style.display = "none";
+        }
+      });
+    });
+
+    function getSelectedAmount() {
+      const active = document.querySelector(".donation-option.active");
+      if (active.dataset.value === "other") {
+        return Math.round((parseFloat(customAmountInput.value) || 0) * 100);
+      }
+      return parseInt(active.dataset.value, 10);
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      payButton.disabled = true;
+      payButton.textContent = "Processing...";
+
+      const amount = getSelectedAmount();
+      if (amount <= 0) {
+        alert("Please enter a valid monthly amount");
+        payButton.disabled = false;
+        payButton.textContent = "Start Monthly Donation";
+        return;
+      }
+
+      const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
+        type: "card",
+        card: card,
+        billing_details: {
+          name: document.getElementById("card-name").value,
+          email: document.getElementById("email").value,
+        },
+      });
+
+      if (pmError) {
+        cardErrors.textContent = pmError.message;
+        payButton.disabled = false;
+        payButton.textContent = "Start Monthly Donation";
+        return;
+      }
+
+      try {
+        const res = await fetch("/.netlify/functions/create-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paymentMethodId: paymentMethod.id,
+            amount,
+            email: document.getElementById("email").value,
+            name: document.getElementById("name").value,
+            donation_by: document.getElementById("donation-by").value
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        const { error: confirmError } = await stripe.confirmCardPayment(data.clientSecret);
+        if (confirmError) {
+          cardErrors.textContent = confirmError.message;
+          payButton.disabled = false;
+          payButton.textContent = "Start Monthly Donation";
+          return;
+        }
+
+        alert("✅ Monthly donation started successfully!");
+        form.reset();
+      } catch (err) {
+        cardErrors.textContent = err.message;
+        payButton.disabled = false;
+        payButton.textContent = "Start Monthly Donation";
+      }
+    });
+  </script>
+</body>
+</html>
