@@ -340,26 +340,18 @@
 <body>
 <div class="container">
   <form id="payment-form">
-    <div class="header">
-      <div class="logo"><i class="fas fa-calendar-check"></i></div>
-      <div class="header-content">
-        <h1>Monthly Donation Plan</h1>
-        <p>Set up a recurring monthly contribution</p>
-      </div>
+    <div class="header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+    <div class="logo" style="display: none;"><i class="fas fa-calendar-check" style="font-size: 36px;"></i></div>
+    <div class="header-content">
+        <h1>Monthly donation</h1>
+        <p>Support our mission with a recurring monthly contribution</p>
+    </div>
     </div>
 
+
+
     <div class="payment-body">
-      <div class="api-key-notice">
-        <i class="fas fa-key"></i>
-        <span>Using your Stripe API key for payment processing</span>
-      </div>
-      
-      <div class="monthly-notice">
-        <i class="fas fa-info-circle"></i>
-        <span>You're setting up a <strong>monthly recurring donation</strong> that will continue until you cancel.</span>
-      </div>
-      
-      <div class="section-title"><i class="fas fa-money-bill-wave"></i><span>Monthly Donation Amount</span></div>
+      <div class="section-title"><i class="fas fa-money-bill-wave"></i><span>Choose your donation amount</span></div>
       
       <div class="donation-amounts">
         <div class="donation-option active" data-value="10">€10/month</div>
@@ -378,17 +370,17 @@
 
       <div class="form-group">
         <label for="donation-by">Make donation by the name of (Optional)</label>
-        <input type="text" id="donation-by" placeholder="e.g., In memory of John Doe, Company Name, etc.">
+        <input type="text" id="donation-by" placeholder="e.g., In memory of someone, company name, etc.">
       </div>
 
       <div class="section-title"><i class="fas fa-user"></i><span>Personal Information</span></div>
-      <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" placeholder="John Smith" required></div>
+      <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" placeholder="Legal name and familly name" required></div>
       <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" placeholder="your.email@example.com" required></div>
-      <div class="form-group"><label for="phone">Phone Number (Optional)</label><input type="tel" id="phone" placeholder="(123) 456-7890"></div>
+      <div class="form-group"><label for="phone">Phone Number (Optional)</label><input type="tel" id="phone" placeholder="Phone number (with country code)"></div>
 
       <div class="section-title"><i class="fas fa-address-card"></i><span>Billing Address</span></div>
-      <div class="form-group"><label for="line1">Street Address</label><input type="text" id="line1" placeholder="123 Main St" required></div>
-      <div class="form-group"><label for="line2">Apt, Suite, Building (Optional)</label><input type="text" id="line2" placeholder="Apt 456"></div>
+      <div class="form-group"><label for="line1">Street Address</label><input type="text" id="line1" placeholder="Av. Gustave Eiffel" required></div>
+      <div class="form-group"><label for="line2">Apt, Suite, Building (Optional)</label><input type="text" id="line2" placeholder="Building 12, Appertment 70"></div>
 
       <div class="form-row">
         <div class="form-group"><label for="city">City</label><input type="text" id="city" placeholder="Paris" required></div>
@@ -412,11 +404,11 @@
         <div class="card-element-container" id="card-element"></div>
         <div class="card-errors" id="card-errors" role="alert"></div>
       </div>
-      <div class="form-group"><label for="card-name">Name on Card</label><input type="text" id="card-name" placeholder="John Smith" required></div>
+      <div class="form-group"><label for="card-name">Cardholder Name</label><input type="text" id="card-name" placeholder="As printed on your card" required></div>
 
       <button class="pay-button" id="submit-button" type="submit">
         <span class="loading-spinner" id="spinner"></span>
-        <span id="button-text">Start Monthly Donation of €10</span>
+        <span id="button-text">Donate €10 / month</span>
       </button>
 
       <div class="success-message" id="success-message">
@@ -437,14 +429,14 @@
     </div>
 
     <div class="payment-footer">
-      <p>Your donation will recur monthly until canceled. You can manage your subscription anytime.</p>
-      <p>© 2023 Your Organization. All rights reserved.</p>
+      <p>By making a monthly donation, you authorize recurring contributions to support our association. These contributions will continue automatically each month until you choose to modify or cancel them. You retain full control and may update or cancel your donation at any time. </p>
+      <p>© 2025 Govinda's. All rights reserved.</p>
     </div>
   </form>
 </div>
 
 <script>
-// Initialize Stripe with API key
+// Stripe pblique API key
 const stripe = Stripe('pk_test_51S1OAH3pBglTeA0mBud6ByC3NIv6nMTrQ4ITBQ1h1GDTBX5ygMuoeCVeBZdF1Jy5wmQq819Xbd4kKRjZ3aJJcDfu00dGiF5MC6');
 const elements = stripe.elements();
 const style = {
@@ -458,11 +450,11 @@ const style = {
   invalid: { color: '#dc3545', iconColor: '#dc3545' }
 };
 
-// Create card element
+// Creation of ard element
 const card = elements.create('card', { style: style, hidePostalCode: true });
 card.mount('#card-element');
 
-// Handle form elements
+// Handling form elements
 const donationOptions = document.querySelectorAll('.donation-amounts .donation-option');
 const otherAmountContainer = document.getElementById('other-amount-container');
 const customAmountInput = document.getElementById('custom-amount');
@@ -473,7 +465,7 @@ const form = document.getElementById('payment-form');
 const cardErrors = document.getElementById('card-errors');
 const successMessage = document.getElementById('success-message');
 
-// Handle donation amount selection
+// Handling donation amount selection
 donationOptions.forEach(option => {
   option.addEventListener('click', function() {
     donationOptions.forEach(opt => opt.classList.remove('active'));
@@ -488,10 +480,10 @@ donationOptions.forEach(option => {
   });
 });
 
-// Update button text when custom amount changes
+// Updating button text when custom amount changes
 customAmountInput.addEventListener('input', updateButtonText);
 
-// Get the selected amount
+// Getting the selected amount
 function getSelectedAmount() {
   const activeOption = document.querySelector('.donation-amounts .donation-option.active');
   if (activeOption.dataset.value === 'other') {
@@ -501,23 +493,23 @@ function getSelectedAmount() {
   }
 }
 
-// Update the pay button text
+// Updating the pay button text
 function updateButtonText() {
   const amount = getSelectedAmount();
   
   if (amount > 0) {
-    buttonText.textContent = `Start Monthly Donation of €${amount}`;
+    buttonText.textContent = `Donate €${amount}/month`;
   } else if (document.querySelector('.donation-amounts .donation-option.active').dataset.value === 'other') {
     buttonText.textContent = 'Enter amount';
   }
 }
 
-// Display card errors
+// Display of card errors
 card.addEventListener('change', function(event) {
   cardErrors.textContent = event.error ? event.error.message : '';
 });
 
-// Handle form submission
+// Handling form submission
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
 
@@ -535,7 +527,7 @@ form.addEventListener('submit', async (event) => {
   try {
     const donationByName = document.getElementById('donation-by').value;
     
-    // Create payment intent on your server
+    // Creating payment intent on my server
     const response = await fetch('/.netlify/functions/create-subscription', {
       method: 'POST',
       headers: { 
@@ -553,7 +545,7 @@ form.addEventListener('submit', async (event) => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Failed to create subscription');
 
-    // Confirm the payment with Stripe
+    // Confirming the payment with Stripe
     const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
       payment_method: {
         card: card,
@@ -576,15 +568,15 @@ form.addEventListener('submit', async (event) => {
     if (error) {
       cardErrors.textContent = error.message;
       payButton.disabled = false;
-      buttonText.textContent = `Start Monthly Donation of €${amount}`;
+      buttonText.textContent = `Donate €${amount}/month`;
       spinner.style.display = 'none';
     } else {
       // Payment succeeded
       successMessage.style.display = 'block';
-      buttonText.textContent = `Start Monthly Donation of €${amount}`;
+      buttonText.textContent = `Donate €${amount}/month`;
       spinner.style.display = 'none';
       
-      // Reset form after successful payment
+      // Reseting the form after successful payment
       setTimeout(() => {
         form.reset();
         donationOptions.forEach(opt => opt.classList.remove('active'));
@@ -599,15 +591,14 @@ form.addEventListener('submit', async (event) => {
     console.error('Error:', err);
     cardErrors.textContent = err.message;
     payButton.disabled = false;
-    buttonText.textContent = `Start Monthly Donation of €${getSelectedAmount()}`;
+    buttonText.textContent = `Donate €${getSelectedAmount()}/month`;
     spinner.style.display = 'none';
   }
 });
 
-// Initialize button text
+// Initializing the button text
 updateButtonText();
 </script>
 </body>
 </html>
-
 
