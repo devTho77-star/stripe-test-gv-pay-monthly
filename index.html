@@ -431,7 +431,7 @@
 </div>
 
 <script>
-// Stripe public API key
+// Stripe public API key - Replace with your actual publishable key
 const stripe = Stripe('pk_test_51S1OAH3pBglTeA0mBud6ByC3NIv6nMTrQ4ITBQ1h1GDTBX5ygMuoeCVeBZdF1Jy5wmQq819Xbd4kKRjZ3aJJcDfu00dGiF5MC6');
 const elements = stripe.elements();
 const style = {
@@ -520,19 +520,34 @@ form.addEventListener('submit', async (event) => {
 
   try {
     const donationByName = document.getElementById('donation-by').value;
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
     
-    // Creating payment intent on my server
+    // Collect address information
+    const address = {
+      line1: document.getElementById('line1').value,
+      line2: document.getElementById('line2').value,
+      city: document.getElementById('city').value,
+      state: document.getElementById('state').value,
+      postal_code: document.getElementById('postal_code').value,
+      country: document.getElementById('country').value,
+    };
+
+    // Creating subscription on the server
     const response = await fetch('/.netlify/functions/create-subscription', {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer STRIPE_SECRET_KEY' // Replace with your secret key
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         amount: Math.round(amount * 100), // Convert to cents
         currency: 'eur',
-        interval: 'monthly',
-        donation_by: donationByName
+        donation_by: donationByName,
+        name: name,
+        email: email,
+        phone: phone,
+        address: address
       }),
     });
 
@@ -545,15 +560,15 @@ form.addEventListener('submit', async (event) => {
         card: card,
         billing_details: {
           name: document.getElementById('card-name').value,
-          email: document.getElementById('email').value,
-          phone: document.getElementById('phone').value,
+          email: email,
+          phone: phone,
           address: {
-            line1: document.getElementById('line1').value,
-            line2: document.getElementById('line2').value,
-            city: document.getElementById('city').value,
-            state: document.getElementById('state').value,
-            postal_code: document.getElementById('postal_code').value,
-            country: document.getElementById('country').value,
+            line1: address.line1,
+            line2: address.line2,
+            city: address.city,
+            state: address.state,
+            postal_code: address.postal_code,
+            country: address.country,
           }
         }
       }
@@ -568,10 +583,10 @@ form.addEventListener('submit', async (event) => {
       // Payment succeeded - Store details and redirect to success page
       const paymentDetails = {
         amount: amount,
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
+        name: name,
+        email: email,
         donationBy: donationByName || '',
-        subscriptionId: data.subscriptionId || 'SUB-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        subscriptionId: data.subscriptionId,
         isMonthly: true
       };
       
