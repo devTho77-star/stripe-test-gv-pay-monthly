@@ -411,11 +411,6 @@
         <span id="button-text">Donate €10 / month</span>
       </button>
 
-      <div class="success-message" id="success-message">
-        <i class="fas fa-check-circle"></i>
-        <span>Payment successful! Thank you for your monthly donation.</span>
-      </div>
-
       <div class="secure-notice"><i class="fas fa-lock"></i><span>Your payment is secured with SSL encryption</span></div>
       <div class="accepted-cards">
         <p>We accept</p>
@@ -436,7 +431,7 @@
 </div>
 
 <script>
-// Stripe pblique API key
+// Stripe public API key
 const stripe = Stripe('pk_test_51S1OAH3pBglTeA0mBud6ByC3NIv6nMTrQ4ITBQ1h1GDTBX5ygMuoeCVeBZdF1Jy5wmQq819Xbd4kKRjZ3aJJcDfu00dGiF5MC6');
 const elements = stripe.elements();
 const style = {
@@ -450,7 +445,7 @@ const style = {
   invalid: { color: '#dc3545', iconColor: '#dc3545' }
 };
 
-// Creation of ard element
+// Creation of card element
 const card = elements.create('card', { style: style, hidePostalCode: true });
 card.mount('#card-element');
 
@@ -463,7 +458,6 @@ const buttonText = document.getElementById('button-text');
 const spinner = document.getElementById('spinner');
 const form = document.getElementById('payment-form');
 const cardErrors = document.getElementById('card-errors');
-const successMessage = document.getElementById('success-message');
 
 // Handling donation amount selection
 donationOptions.forEach(option => {
@@ -571,21 +565,21 @@ form.addEventListener('submit', async (event) => {
       buttonText.textContent = `Donate €${amount}/month`;
       spinner.style.display = 'none';
     } else {
-      // Payment succeeded
-      successMessage.style.display = 'block';
-      buttonText.textContent = `Donate €${amount}/month`;
-      spinner.style.display = 'none';
+      // Payment succeeded - Store details and redirect to success page
+      const paymentDetails = {
+        amount: amount,
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        donationBy: donationByName || '',
+        subscriptionId: data.subscriptionId || 'SUB-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        isMonthly: true
+      };
       
-      // Reseting the form after successful payment
-      setTimeout(() => {
-        form.reset();
-        donationOptions.forEach(opt => opt.classList.remove('active'));
-        donationOptions[0].classList.add('active');
-        otherAmountContainer.classList.remove('visible');
-        successMessage.style.display = 'none';
-        payButton.disabled = false;
-        updateButtonText();
-      }, 3000);
+      // Store in sessionStorage to pass to the success page
+      sessionStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));
+      
+      // Redirect to success page
+      window.location.href = 'success_confirmation.html';
     }
   } catch (err) {
     console.error('Error:', err);
@@ -601,4 +595,3 @@ updateButtonText();
 </script>
 </body>
 </html>
-
