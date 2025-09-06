@@ -24,21 +24,6 @@
       80% { transform: translateY(-5px); }
       100% { transform: translateY(0); }
     }
-    .demo-text { color:#7f8c8d; margin-bottom:40px; font-size:1.2rem; max-width:600px; margin:auto; line-height:1.6; }
-    .btn {
-      background: linear-gradient(to right, #4CAF50, #2E8B57); color:white; border:none;
-      padding:15px 30px; font-size:18px; border-radius:50px; cursor:pointer;
-      box-shadow:0 5px 15px rgba(76,175,80,0.4);
-      animation: pulseBtn 2s infinite alternate;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 20px;
-    }
-    @keyframes pulseBtn {
-      0% { transform: scale(1); box-shadow:0 5px 15px rgba(76,175,80,0.4); }
-      50% { transform: scale(1.05); box-shadow:0 8px 20px rgba(76,175,80,0.6); }
-      100% { transform: scale(1); box-shadow:0 5px 15px rgba(76,175,80,0.4); }
-    }
 
     /* Success message styling */
     .success-content {
@@ -179,12 +164,8 @@
 
       <div class="success-icon"><i class="fas fa-check"></i></div>
 
-
-      <h2 style="margin-bottom: 15px; color: #2E8B57;">Payment Successful!</h2>
-      <p style="font-size: 1.1rem; line-height: 1.6; margin-top: 10px; margin-bottom: 10px; font-weight: bold;"> Thank you for your subscription ❤️ </p>
- 
-      <p>Your monthly gift is like planting a seed of compassion - with each season it grows, bringing renewal, harmony, and the promise of our visioned brighter tomorrow.</p>
-
+      <h2>Monthly Donation Setup Complete!</h2>
+      <p>Thank you for setting up your monthly donation. Your ongoing support helps us make the world a more beautiful place.</p>
 
       <div class="donation-details">
         <h3>Donation Details</h3>
@@ -194,7 +175,6 @@
         <div class="detail-row"><span class="detail-label">On behalf of:</span><span class="detail-value" id="success-on-behalf-of">N/A</span></div>
         <div class="detail-row"><span class="detail-label">Subscription ID:</span><span class="detail-value" id="success-subscription-id">SUB-7842-8992</span></div>
       </div>
-      
 
       <a href="index.html" class="action-button"><i class="fas fa-check-circle"></i> Return Home</a>
     </div>
@@ -216,9 +196,6 @@
           document.getElementById('success-name').textContent = paymentDetails.name;
           document.getElementById('success-email').textContent = paymentDetails.email;
           
-          // Update the recurring amount in the info box
-          document.getElementById('recurring-amount').textContent = `€${paymentDetails.amount.toFixed(2)}`;
-          
           // Update the "On behalf of" field - show N/A if empty
           const onBehalfOfValue = paymentDetails.donationBy && paymentDetails.donationBy.trim() !== '' ? 
                                 paymentDetails.donationBy : 'N/A';
@@ -236,7 +213,6 @@
           document.getElementById('success-amount').textContent = '€0.00/month';
           document.getElementById('success-name').textContent = 'Not available';
           document.getElementById('success-email').textContent = 'Not available';
-          document.getElementById('recurring-amount').textContent = '€0.00';
           document.getElementById('success-on-behalf-of').textContent = 'N/A';
           document.getElementById('success-subscription-id').textContent = 'N/A';
         }
@@ -331,4 +307,3 @@
   </script>
 </body>
 </html>
-
