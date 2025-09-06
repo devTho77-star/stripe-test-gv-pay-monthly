@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: 'Method Not Allowed' };
     }
 
-    const { amount, currency, donation_by } = JSON.parse(event.body);
+    const { amount, currency, donation_by, name, email, phone, address } = JSON.parse(event.body);
 
     if (!amount || amount <= 0) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Invalid amount' }) };
@@ -23,12 +23,24 @@ exports.handler = async (event, context) => {
     const price = await stripe.prices.create({
       unit_amount: amount,
       currency: currency,
-      recurring: { interval: 'month' }, // ✅ Correct: 'month', not 'monthly'
+      recurring: { interval: 'month' },
       product: product.id,
     });
 
-    // 3. Create a Stripe Customer (optional: you can attach email if needed)
-    const customer = await stripe.customers.create();
+    // 3. Create a Stripe Customer with billing details
+    const customer = await stripe.customers.create({
+      name: name,
+      email: email,
+      phone: phone,
+      address: {
+        line1: address.line1,
+        line2: address.line2 || '',
+        city: address.city,
+        state: address.state || '',
+        postal_code: address.postal_code,
+        country: address.country,
+      },
+    });
 
     // 4. Create the subscription
     const subscription = await stripe.subscriptions.create({
@@ -38,12 +50,16 @@ exports.handler = async (event, context) => {
       expand: ['latest_invoice.payment_intent'],
     });
 
-    // Return the client secret to confirm payment on frontend
+    // Return the client secret and subscription ID to confirm payment on frontend
     const clientSecret = subscription.latest_invoice.payment_intent.client_secret;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ clientSecret }),
+      body: JSON.stringify({ 
+        clientSecret, 
+        subscriptionId: subscription.id,
+        customerId: customer.id
+      }),
     };
   } catch (err) {
     console.error(err);
